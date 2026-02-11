@@ -67,8 +67,11 @@ export function GameIframe({ authToken }: GameIframeProps) {
         }
 
         // Construct final URL
-        const url = `${FRONT_APP_DOMAIN}?${params.toString()}`;
-        setGameUrl(url);
+       // const url = `${FRONT_APP_DOMAIN}?${params.toString()}`;
+        const GameUrl = `${FRONT_APP_DOMAIN}?token=${encodeURIComponent(
+          token
+)}&providerId=${PROVIDER_ID}&currency=${CURRENCY}&language=${LANGUAGE}`;
+        setGameUrl(GameUrl);
       } catch (err) {
         console.error('Failed to load game:', err);
         setError(err instanceof Error ? err.message : 'Failed to load game');
