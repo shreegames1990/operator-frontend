@@ -21,7 +21,7 @@ const getBaseUrl = () => {
   return process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000';
 };
 
-// Helper function to get full image URL from relative path
+// Helpe function to get full image URL from relative path
 export const getImageUrl = (imagePath: string | undefined | null): string => {
   if (!imagePath) return '';
   
