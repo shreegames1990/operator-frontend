@@ -18,14 +18,13 @@ const metadata = {
 
 // Create config with proper connectors
 const createWagmiConfig = () => {
-  const connectors = [injected({ shimDisconnect: true })];
-  
-  // Only add WalletConnect if projectId is provided
-  if (projectId) {
-    connectors.unshift(
-      walletConnect({ projectId, metadata, showQrModal: true })
-    );
-  }
+  // Build connectors array conditionally
+  const connectors = projectId
+    ? [
+        walletConnect({ projectId, metadata, showQrModal: true }),
+        injected({ shimDisconnect: true }),
+      ]
+    : [injected({ shimDisconnect: true })];
 
   return createConfig({
     chains: [mainnet, sepolia],

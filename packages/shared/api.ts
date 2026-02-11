@@ -11,6 +11,9 @@ import type {
   ProviderResponse,
 } from './types';
 
+// Re-export types for convenience
+export type { Game, Provider };
+
 const getBaseUrl = () => {
   if (typeof window !== 'undefined') {
     return process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000';
