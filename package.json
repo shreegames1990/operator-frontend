@@ -11,6 +11,7 @@
     "dev:user": "bun run --filter user-frontend dev",
     "dev:admin": "bun run --filter admin-frontend dev",
     "build": "bun run --filter './apps/*' build",
+    "start": "bun run --filter user-frontend start",
     "lint": "bun run --filter './apps/*' lint"
   },
   "devDependencies": {
