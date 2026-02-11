@@ -1,36 +1,74 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Operator Monorepo
+
+This is a monorepo containing the Operator frontend applications.
+
+## Structure
+
+```
+operator-frontend/
+├── apps/
+│   ├── user-frontend/     # User-facing frontend (port 3001)
+│   └── admin-frontend/    # Admin panel (port 3002)
+├── packages/
+│   └── shared/            # Shared utilities, types, and components
+└── package.json           # Root workspace configuration
+```
 
 ## Getting Started
 
-First, run the development server:
+### Install Dependencies
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+bun install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Development
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Run both frontends:
+```bash
+bun run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Run user frontend only:
+```bash
+bun run dev:user
+```
 
-## Learn More
+Run admin frontend only:
+```bash
+bun run dev:admin
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Applications
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### User Frontend (`apps/user-frontend`)
+- Port: 3001
+- Public-facing application for users to play games
+- Accessible at `http://localhost:3001`
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Admin Frontend (`apps/admin-frontend`)
+- Port: 3002
+- Admin panel with role-based access control
+- Only accessible to users with `ADMIN` role
+- Accessible at `http://localhost:3002`
 
-## Deploy on Vercel
+## Authentication
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Both applications use wallet-based authentication via Web3Modal/Wagmi. The admin panel checks for the `ADMIN` userType in the user data returned from the login API.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Shared Package
+
+The `@operator/shared` package contains:
+- Wallet provider configuration
+- API utilities (`walletLogin`, `getGameToken`, `getUsersList`, game CRUD operations)
+- Type definitions (`UserType`, `UserData`, `Game`, etc.)
+
+## Environment Variables
+
+Both applications require:
+- `NEXT_PUBLIC_API_BASE_URL` - Backend API base URL (default: `http://localhost:3000`)
+- `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID` - WalletConnect project ID (get one at https://cloud.walletconnect.com)
+
+User frontend also requires game-related environment variables (see `apps/user-frontend/.env.example` if available).
+
+Create a `.env.local` file in the root directory or in each app directory with these variables. See `.env.example` for reference.

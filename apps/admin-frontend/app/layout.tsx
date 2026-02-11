@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { WalletProvider } from "@/lib/wallet-provider";
-import { NavbarWrapper } from "@/components/navbar-wrapper";
+import { WalletProvider } from "@operator/shared/wallet";
+import { AdminNavbar } from "@/components/admin-navbar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Operator Frontend",
-  description: "Operator Frontend Application",
+  title: "Operator Admin Panel",
+  description: "Operator Admin Panel",
 };
 
 export default function RootLayout({
@@ -36,10 +36,12 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <WalletProvider>
-          <NavbarWrapper />
+          <AdminNavbar />
           {children}
         </WalletProvider>
       </body>
     </html>
   );
 }
+
+
