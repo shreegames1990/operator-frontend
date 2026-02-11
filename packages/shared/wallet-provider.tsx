@@ -40,35 +40,43 @@ const queryClient = new QueryClient();
 let web3ModalInitialized = false;
 let wagmiConfigForModal: ReturnType<typeof createWagmiConfig> | null = null;
 
-// Initialize Web3Modal synchronously if we're in browser
-// Always initialize it (even without projectId) so the hook doesn't throw
-if (typeof window !== 'undefined' && !web3ModalInitialized) {
-  try {
-    wagmiConfigForModal = createWagmiConfig();
-    // Use projectId if available, otherwise use a placeholder (modal will still work for injected wallets)
-    const modalProjectId = projectId || '00000000000000000000000000000000';
-    createWeb3Modal({
-      wagmiConfig: wagmiConfigForModal,
-      projectId: modalProjectId,
-      enableAnalytics: false,
-    });
-    web3ModalInitialized = true;
-    
-    if (!projectId) {
-      console.warn(
-        'NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID is not set. WalletConnect wallets will not be available. ' +
-        'Get a project ID at https://cloud.walletconnect.com. Injected wallets will still work.'
-      );
-    }
-  } catch (error) {
-    console.error('Failed to initialize Web3Modal:', error);
-  }
-}
-
 export function WalletProvider({ children }: { children: React.ReactNode }) {
-  const config = useMemo(() => wagmiConfigForModal || createWagmiConfig(), []);
+  const [mounted, setMounted] = useState(false);
 
-  // Always render WagmiProvider to avoid hook errors
+  // Initialize Web3Modal only on client side
+  useEffect(() => {
+    if (typeof window !== 'undefined' && !web3ModalInitialized) {
+      try {
+        wagmiConfigForModal = createWagmiConfig();
+        // Use projectId if available, otherwise use a placeholder (modal will still work for injected wallets)
+        const modalProjectId = projectId || '00000000000000000000000000000000';
+        createWeb3Modal({
+          wagmiConfig: wagmiConfigForModal,
+          projectId: modalProjectId,
+          enableAnalytics: false,
+        });
+        web3ModalInitialized = true;
+        
+        if (!projectId) {
+          console.warn(
+            'NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID is not set. WalletConnect wallets will not be available. ' +
+            'Get a project ID at https://cloud.walletconnect.com. Injected wallets will still work.'
+          );
+        }
+      } catch (error) {
+        console.error('Failed to initialize Web3Modal:', error);
+      }
+    }
+    setMounted(true);
+  }, []);
+
+  // Don't render WagmiProvider during SSR to avoid indexedDB access
+  if (!mounted) {
+    return <>{children}</>;
+  }
+
+  const config = wagmiConfigForModal || createWagmiConfig();
+
   return (
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
