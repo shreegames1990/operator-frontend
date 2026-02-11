@@ -28,8 +28,8 @@ export function GameIframe({ authToken }: GameIframeProps) {
         const { token } = await getGameToken(authToken);
 
         // Game configuration - these should be in environment variables
-        const FRONT_APP_DOMAIN = process.env.NEXT_PUBLIC_GAME_FRONT_URL || 'https://client.crash.aviator.studio:81';
-        const PROVIDER_ID = process.env.NEXT_PUBLIC_PROVIDER_ID || '';
+        const FRONT_APP_DOMAIN = process.env.NEXT_PUBLIC_GAME_FRONT_URL || 'https://staging.crash.aviator.studio';
+        const PROVIDER_ID = process.env.NEXT_PUBLIC_PROVIDER_ID || '698c55d89dfa99b8e4071254';
         const CASINO_ID = process.env.NEXT_PUBLIC_CASINO_ID || 'casino1';
         const COUNTRY = process.env.NEXT_PUBLIC_COUNTRY || 'US';
         const GAME_ID = parseInt(process.env.NEXT_PUBLIC_GAME_ID || '1', 10);
@@ -72,6 +72,7 @@ export function GameIframe({ authToken }: GameIframeProps) {
           token
 )}&providerId=${PROVIDER_ID}&currency=${CURRENCY}&language=${LANGUAGE}`;
         setGameUrl(GameUrl);
+        console.log('GameUrl', GameUrl);
       } catch (err) {
         console.error('Failed to load game:', err);
         setError(err instanceof Error ? err.message : 'Failed to load game');
@@ -96,7 +97,7 @@ export function GameIframe({ authToken }: GameIframeProps) {
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-[600px] bg-gray-100 dark:bg-gray-900 rounded-lg">
+      <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900 rounded-lg">
         <div className="text-center p-8">
           <div className="text-red-500 text-xl mb-4">⚠️</div>
           <p className="text-red-600 dark:text-red-400 mb-4">{error}</p>
@@ -113,7 +114,7 @@ export function GameIframe({ authToken }: GameIframeProps) {
   }
 
   return (
-    <div className="w-full h-full min-h-[600px] bg-gray-100 dark:bg-gray-900 rounded-lg overflow-hidden">
+    <div className="w-full h-full min-h-[900px] bg-gray-100 dark:bg-gray-900 rounded-lg overflow-hidden">
       <iframe
         src={gameUrl}
         className="w-full h-full border-0"
