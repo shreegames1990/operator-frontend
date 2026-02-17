@@ -21,6 +21,7 @@ export interface WalletLoginResponse {
 export interface GameTokenResponse {
   token: string;
   success: boolean;
+  gameFrontUrl?: string;
 }
 
 export interface UsersListResponse {
@@ -44,6 +45,8 @@ export interface Game {
   minBet: number;
   maxBet: number;
   provider: string;
+  providerID?: string;
+  gameFrontUrl?: string | null;
   category: string;
   isActive: boolean;
   createdAt?: string;
@@ -83,6 +86,10 @@ export interface Provider {
   providerID: string;
   name: string;
   logo?: string;
+  gameFrontUrl?: string;
+  active?: boolean;
+  /** Only sent on create/update; never returned by API */
+  publicKey?: string;
   createdAt?: string;
   updatedAt?: string;
 }

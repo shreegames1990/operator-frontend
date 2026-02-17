@@ -12,7 +12,10 @@ const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || '';
 const metadata = {
   name: 'Operator',
   description: 'Operator Application',
-  url: typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000',
+  url:
+    typeof window !== 'undefined'
+      ? window.location.origin
+      : (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000').replace(/\/$/, ''),
   icons: ['https://avatars.githubusercontent.com/u/37784886'],
 };
 

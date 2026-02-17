@@ -16,13 +16,23 @@ export interface WalletLoginResponse {
 export interface GameTokenResponse {
   token: string;
   success: boolean;
+  gameFrontUrl?: string;
+}
+
+function getBaseUrl(): string {
+  const url =
+    typeof process.env.NEXT_PUBLIC_API_BASE_URL === 'string' &&
+    process.env.NEXT_PUBLIC_API_BASE_URL.trim()
+      ? process.env.NEXT_PUBLIC_API_BASE_URL.trim()
+      : 'http://localhost:3003';
+  return url.replace(/\/$/, '');
 }
 
 export async function walletLogin(
   walletAddress: string,
   userName?: string
 ): Promise<WalletLoginResponse> {
-  const response = await fetch('http://localhost:3000/api/v1/users/walletLogin', {
+  const response = await fetch(`${getBaseUrl()}/api/v1/users/walletLogin`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -42,14 +52,18 @@ export async function walletLogin(
   return response.json();
 }
 
-export async function getGameToken(authToken: string): Promise<GameTokenResponse> {
-  const response = await fetch('http://localhost:3000/api/game/get-token', {
+export async function getGameToken(
+  authToken: string,
+  providerID?: string
+): Promise<GameTokenResponse> {
+  const response = await fetch(`${getBaseUrl()}/api/game/get-token`, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${authToken}`,
       'Content-Type': 'application/json',
       'Accept': 'application/json',
     },
+    body: JSON.stringify(providerID ? { providerID } : {}),
   });
 
   if (!response.ok) {

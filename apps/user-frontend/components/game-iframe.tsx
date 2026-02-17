@@ -5,9 +5,11 @@ import { getGameToken } from '@operator/shared/api';
 
 interface GameIframeProps {
   authToken: string | null;
+  providerID?: string | null;
+  gameFrontUrl?: string | null;
 }
 
-export function GameIframe({ authToken }: GameIframeProps) {
+export function GameIframe({ authToken, providerID, gameFrontUrl }: GameIframeProps) {
   const [gameUrl, setGameUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -24,55 +26,30 @@ export function GameIframe({ authToken }: GameIframeProps) {
         setLoading(true);
         setError(null);
 
-        // Get encrypted token from backend
-        const { token } = await getGameToken(authToken);
+        const useGameContext = providerID && gameFrontUrl;
+        const { token } = await getGameToken(
+          authToken,
+          useGameContext ? providerID : undefined
+        );
 
-        // Game configuration - these should be in environment variables
-        const FRONT_APP_DOMAIN = process.env.NEXT_PUBLIC_GAME_FRONT_URL || 'https://staging.crash.aviator.studio';
-        const PROVIDER_ID = process.env.NEXT_PUBLIC_PROVIDER_ID || '698c55d89dfa99b8e4071254';
-        const CASINO_ID = process.env.NEXT_PUBLIC_CASINO_ID || 'casino1';
-        const COUNTRY = process.env.NEXT_PUBLIC_COUNTRY || 'US';
-        const GAME_ID = parseInt(process.env.NEXT_PUBLIC_GAME_ID || '1', 10);
-        const LANGUAGE = process.env.NEXT_PUBLIC_GAME_LANGUAGE || 'en';
+        const baseUrl = useGameContext
+          ? gameFrontUrl.replace(/\/$/, '')
+          : (process.env.NEXT_PUBLIC_GAME_FRONT_URL || '').replace(/\/$/, '');
+        const provId = useGameContext
+          ? providerID
+          : (process.env.NEXT_PUBLIC_PROVIDER_ID || '');
+
+        if (!baseUrl || !provId) {
+          setError('Game URL or provider not configured');
+          return;
+        }
+
         const CURRENCY = process.env.NEXT_PUBLIC_GAME_CURRENCY || 'USD';
-        const BACK_TO_HOME = process.env.NEXT_PUBLIC_BACK_TO_HOME || '';
-        const FULLSCREEN = process.env.NEXT_PUBLIC_GAME_FULLSCREEN !== 'false';
-        const CHAT = process.env.NEXT_PUBLIC_GAME_CHAT === 'true';
-        const DEDUCT_FREE_BET = process.env.NEXT_PUBLIC_DEDUCT_FREE_BET === 'true';
-
-        // Build query parameters
-        const params = new URLSearchParams();
-        params.append('token', token);
-        params.append('providerId', PROVIDER_ID);
-        params.append('gameId', GAME_ID.toString());
-        params.append('casinoId', CASINO_ID);
-        params.append('country', COUNTRY);
-        params.append('language', LANGUAGE);
-        params.append('currency', CURRENCY);
-
-        if (BACK_TO_HOME) {
-          params.append('backToHome', BACK_TO_HOME);
-        }
-
-        if (!FULLSCREEN) {
-          params.append('fullscreen', 'false');
-        }
-
-        if (CHAT) {
-          params.append('chat', 'true');
-        }
-
-        if (DEDUCT_FREE_BET) {
-          params.append('deductFreeBet', 'true');
-        }
-
-        // Construct final URL
-       // const url = `${FRONT_APP_DOMAIN}?${params.toString()}`;
-        const GameUrl = `${FRONT_APP_DOMAIN}?token=${encodeURIComponent(
+        const LANGUAGE = process.env.NEXT_PUBLIC_GAME_LANGUAGE || 'en';
+        const gameUrlBuilt = `${baseUrl}?token=${encodeURIComponent(
           token
-)}&providerId=${PROVIDER_ID}&currency=${CURRENCY}&language=${LANGUAGE}`;
-        setGameUrl(GameUrl);
-        console.log('GameUrl', GameUrl);
+        )}&providerId=${encodeURIComponent(provId)}&currency=${CURRENCY}&language=${LANGUAGE}`;
+        setGameUrl(gameUrlBuilt);
       } catch (err) {
         console.error('Failed to load game:', err);
         setError(err instanceof Error ? err.message : 'Failed to load game');
@@ -82,7 +59,7 @@ export function GameIframe({ authToken }: GameIframeProps) {
     };
 
     loadGame();
-  }, [authToken]);
+  }, [authToken, providerID, gameFrontUrl]);
 
   if (loading) {
     return (
@@ -102,7 +79,7 @@ export function GameIframe({ authToken }: GameIframeProps) {
           <div className="text-red-500 text-xl mb-4">⚠️</div>
           <p className="text-red-600 dark:text-red-400 mb-4">{error}</p>
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            Please make sure you're connected with your wallet
+            Please make sure you&apos;re connected with your wallet
           </p>
         </div>
       </div>
@@ -113,13 +90,24 @@ export function GameIframe({ authToken }: GameIframeProps) {
     return null;
   }
 
+  const allowOrigin = (() => {
+    try {
+      return new URL(gameUrl).origin;
+    } catch {
+      return '';
+    }
+  })();
+  const allowAttr = allowOrigin
+    ? `clipboard-read ${allowOrigin}; clipboard-write ${allowOrigin}`
+    : undefined;
+
   return (
     <div className="w-full h-full min-h-[900px] bg-gray-100 dark:bg-gray-900 rounded-lg overflow-hidden">
       <iframe
         src={gameUrl}
         className="w-full h-full border-0"
-        allow="clipboard-read https://crash.aviator.studio; clipboard-write https://crash.aviator.studio"
-        title="Aviator Game"
+        allow={allowAttr}
+        title="Game"
         style={{ minHeight: '600px' }}
       />
     </div>

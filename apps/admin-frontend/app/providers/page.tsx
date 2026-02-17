@@ -24,6 +24,8 @@ export default function ProvidersPage() {
     providerID: '',
     name: '',
     logo: '',
+    gameFrontUrl: '',
+    publicKey: '',
   });
   const [uploadingLogo, setUploadingLogo] = useState(false);
 
@@ -89,9 +91,11 @@ export default function ProvidersPage() {
     try {
       setError(null);
       await createProvider(authToken, {
-        providerID: formData.providerID,
-        name: formData.name,
+        providerID: formData.providerID!,
+        name: formData.name!,
         logo: formData.logo,
+        gameFrontUrl: formData.gameFrontUrl || undefined,
+        publicKey: formData.publicKey || undefined,
       });
       setShowCreateModal(false);
       resetForm();
@@ -111,10 +115,15 @@ export default function ProvidersPage() {
 
     try {
       setError(null);
-      await updateProvider(authToken, editingProvider.providerID, {
+      const updates: Partial<Provider> = {
         name: formData.name,
         logo: formData.logo,
-      });
+        gameFrontUrl: formData.gameFrontUrl || undefined,
+      };
+      if (formData.publicKey?.trim()) {
+        updates.publicKey = formData.publicKey.trim();
+      }
+      await updateProvider(authToken, editingProvider.providerID, updates);
       setEditingProvider(null);
       resetForm();
       fetchProviders();
@@ -145,6 +154,8 @@ export default function ProvidersPage() {
       providerID: '',
       name: '',
       logo: '',
+      gameFrontUrl: '',
+      publicKey: '',
     });
   };
 
@@ -153,6 +164,8 @@ export default function ProvidersPage() {
     setFormData({
       name: provider.name,
       logo: provider.logo || '',
+      gameFrontUrl: provider.gameFrontUrl || '',
+      publicKey: '', // Not returned by API; leave blank to keep existing
     });
   };
 
@@ -460,6 +473,44 @@ export default function ProvidersPage() {
                         </div>
                       )}
                     </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Game front URL
+                    </label>
+                    <input
+                      type="url"
+                      value={formData.gameFrontUrl ?? ''}
+                      onChange={(e) =>
+                        setFormData({ ...formData, gameFrontUrl: e.target.value })
+                      }
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 text-black dark:text-white"
+                      placeholder="https://example.com/embed"
+                    />
+                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                      Base URL for the provider game iframe (e.g. https://client.example.com/embed). Required for game-enabled providers.
+                    </p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Public key (PEM)
+                    </label>
+                    <textarea
+                      value={formData.publicKey ?? ''}
+                      onChange={(e) =>
+                        setFormData({ ...formData, publicKey: e.target.value })
+                      }
+                      rows={4}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 text-black dark:text-white font-mono text-sm"
+                      placeholder={
+                        editingProvider
+                          ? 'Leave blank to keep existing key'
+                          : '-----BEGIN PUBLIC KEY----- ... -----END PUBLIC KEY-----'
+                      }
+                    />
+                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                      RSA public key for encrypting game tokens. Stored securely; not shown after save. Leave blank when editing to keep existing key.
+                    </p>
                   </div>
                 </div>
                 <div className="mt-6 flex gap-3 justify-end">

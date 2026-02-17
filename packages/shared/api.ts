@@ -14,14 +14,16 @@ import type {
 // Re-export types for convenience
 export type { Game, Provider };
 
-const getBaseUrl = () => {
-  if (typeof window !== 'undefined') {
-    return process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000';
-  }
-  return process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000';
+const getBaseUrl = (): string => {
+  const url =
+    typeof process.env.NEXT_PUBLIC_API_BASE_URL === 'string' &&
+    process.env.NEXT_PUBLIC_API_BASE_URL.trim()
+      ? process.env.NEXT_PUBLIC_API_BASE_URL.trim()
+      : 'http://localhost:3003';
+  return url.replace(/\/$/, '');
 };
 
-// Helpe function to get full image URL from relative path
+// Helper function to get full image URL from relative path
 export const getImageUrl = (imagePath: string | undefined | null): string => {
   if (!imagePath) return '';
   
@@ -61,7 +63,10 @@ export async function walletLogin(
   return response.json();
 }
 
-export async function getGameToken(authToken: string): Promise<GameTokenResponse> {
+export async function getGameToken(
+  authToken: string,
+  providerID?: string
+): Promise<GameTokenResponse> {
   const response = await fetch(`${getBaseUrl()}/api/game/get-token`, {
     method: 'POST',
     headers: {
@@ -69,6 +74,7 @@ export async function getGameToken(authToken: string): Promise<GameTokenResponse
       'Content-Type': 'application/json',
       'Accept': 'application/json',
     },
+    body: JSON.stringify(providerID ? { providerID } : {}),
   });
 
   if (!response.ok) {

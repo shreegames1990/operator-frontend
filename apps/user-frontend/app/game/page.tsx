@@ -1,10 +1,17 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { GameIframe } from '@/components/game-iframe';
+import { getGameByID } from '@operator/shared/api';
+import type { Game } from '@operator/shared/types';
 
 export default function GamePage() {
+  const searchParams = useSearchParams();
+  const gameId = searchParams.get('gameId');
   const [authToken, setAuthToken] = useState<string | null>(null);
+  const [game, setGame] = useState<Game | null>(null);
+  const [gameError, setGameError] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -12,6 +19,27 @@ export default function GamePage() {
     const token = localStorage.getItem('authToken');
     setAuthToken(token);
   }, []);
+
+  useEffect(() => {
+    if (!mounted || !gameId) {
+      if (!gameId) setGame(null);
+      return;
+    }
+    let cancelled = false;
+    getGameByID(gameId)
+      .then((res) => {
+        if (cancelled) return;
+        const data = res.data ?? res.game;
+        if (data) setGame(data);
+        else setGameError('Game not found');
+      })
+      .catch((err) => {
+        if (!cancelled) setGameError(err instanceof Error ? err.message : 'Failed to load game');
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [mounted, gameId]);
 
   if (!mounted) {
     return (
@@ -24,11 +52,41 @@ export default function GamePage() {
     );
   }
 
+  if (gameId && !game && !gameError) {
+    return (
+      <div className="min-h-screen bg-zinc-50 dark:bg-black flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">Loading game...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (gameId && gameError) {
+    return (
+      <div className="min-h-screen bg-zinc-50 dark:bg-black flex items-center justify-center">
+        <p className="text-red-500">{gameError}</p>
+      </div>
+    );
+  }
+
+  if (gameId && game && !game.gameFrontUrl) {
+    return (
+      <div className="min-h-screen bg-zinc-50 dark:bg-black flex items-center justify-center">
+        <p className="text-zinc-500">Game not available at the moment.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-black">
-      <main className=" mx-auto    min-h-screen">
-        
-        <GameIframe authToken={authToken} />
+      <main className="mx-auto min-h-screen">
+        <GameIframe
+          authToken={authToken}
+          providerID={game?.providerID ?? game?.provider ?? undefined}
+          gameFrontUrl={game?.gameFrontUrl ?? undefined}
+        />
       </main>
     </div>
   );
