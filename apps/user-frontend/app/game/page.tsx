@@ -80,8 +80,8 @@ export default function GamePage() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-black">
-      <main className="mx-auto min-h-screen">
+    <div className="fixed inset-0 w-full h-full bg-zinc-950">
+      <main className="w-full h-full">
         <GameIframe
           authToken={authToken}
           providerID={game?.providerID ?? game?.provider ?? undefined}

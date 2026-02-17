@@ -102,13 +102,12 @@ export function GameIframe({ authToken, providerID, gameFrontUrl }: GameIframePr
     : undefined;
 
   return (
-    <div className="w-full h-full min-h-[900px] bg-gray-100 dark:bg-gray-900 rounded-lg overflow-hidden">
+    <div className="absolute inset-0 w-full h-full bg-zinc-950 overflow-hidden">
       <iframe
         src={gameUrl}
-        className="w-full h-full border-0"
+        className="absolute inset-0 w-full h-full border-0"
         allow={allowAttr}
         title="Game"
-        style={{ minHeight: '600px' }}
       />
     </div>
   );
