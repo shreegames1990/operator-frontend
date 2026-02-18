@@ -21,10 +21,7 @@ export default function GamePage() {
   }, []);
 
   useEffect(() => {
-    if (!mounted || !gameId) {
-      if (!gameId) setGame(null);
-      return;
-    }
+    if (!mounted || !gameId) return;
     let cancelled = false;
     getGameByID(gameId)
       .then((res) => {
@@ -79,13 +76,27 @@ export default function GamePage() {
     );
   }
 
+  const gameIdFromGame = game?.gameID ?? (game as { gameId?: string })?.gameId;
+  const gameMatchesUrl = game && gameIdFromGame === gameId;
+  if (!gameMatchesUrl) {
+    return (
+      <div className="min-h-screen bg-zinc-50 dark:bg-black flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">Loading game...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="fixed inset-0 w-full h-full bg-zinc-950">
       <main className="w-full h-full">
         <GameIframe
+          key={gameId}
           authToken={authToken}
-          providerID={game?.providerID ?? game?.provider ?? undefined}
-          gameFrontUrl={game?.gameFrontUrl ?? undefined}
+          providerID={game.providerID ?? game.provider ?? undefined}
+          gameFrontUrl={game.gameFrontUrl ?? undefined}
         />
       </main>
     </div>
